@@ -1,0 +1,66 @@
+name: Default
+
+on:
+  push:
+    branches: [main, master, test]
+
+jobs:
+  test:
+    runs-on: elisa-normal
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          check-latest: true
+
+      - name: Run unit tests
+        run: |
+          make test
+
+      - name: Run integration tests
+        run: |
+          make test-integration
+
+  build:
+    runs-on: elisa-normal
+    timeout-minutes: 30
+    env:
+      INPUTS: "inputs.netconf,inputs.gnmi,inputs.jti_openconfig_telemetry,inputs.internal,inputs.snmp,inputs.snmp_trap,inputs.netflow"
+      OUTPUTS: "outputs.health,outputs.kafka,outputs.prometheus_client"
+      PROCESSORS: "processors.converter,processors.strings,processors.rename,processors.regex,processors.filter"
+      AGGREGATORS: "aggregators.merge"
+      SERIALIZERS: "serializers.json"
+      LDFLAGS: "-w -s"
+      CGO_ENABLED: "0"
+      GOARCH: ${{ matrix.arch }}
+      GOOS: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - name: linux x86_64
+            os: linux
+            arch: amd64
+          - name: macOS aarch64
+            os: darwin
+            arch: arm64
+          - name: macOS x86_64
+            os: darwin
+            arch: amd64
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          check-latest: true
+
+      - name: Build ${{ matrix.name }} telegraf
+        env:
+          BUILDTAGS: "custom,${{ env.INPUTS }},${{ env.OUTPUTS }},${{ env.PROCESSORS }},${{ env.AGGREGATORS }},${{ env.SERIALIZERS }}"
+        run: |
+          make build
+          tar -czvf telegraf-${{ matrix.os }}-${{ matrix.arch }}.tar.gz telegraf
