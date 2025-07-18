@@ -53,6 +53,13 @@ jobs:
         with:
           fetch-depth: 0
 
+<<<<<<< HEAD
+=======
+      - name: Set GHE_HOST
+        run: |
+          echo "GHE_HOST=${GITHUB_SERVER_URL##https:\/\/}" >> "$GITHUB_ENV"
+
+>>>>>>> 3ccf6b322 (feat(gha): Add pr, master and release workflows)
       - name: Draft a release
         uses: elisa-actions/release-drafter@v6
         env:
