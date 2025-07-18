@@ -51,6 +51,10 @@ var defaultReplaceAttr = func(_ []string, attr slog.Attr) slog.Attr {
 	if attr.Key == slog.LevelKey {
 		if level, ok := attr.Value.Any().(slog.Level); ok {
 			attr.Value = slog.StringValue(telegraf.LogLevel(level).String())
+		} else if attr.Key == slog.MessageKey {
+			attr.Key = "message"
+		} else if attr.Key == slog.TimeKey {
+			attr.Key = "@timestamp"
 		}
 	}
 	return attr
