@@ -21,3 +21,4 @@ process.yml
 resource.syso
 versioninfo.json
 .uuid
+/target
