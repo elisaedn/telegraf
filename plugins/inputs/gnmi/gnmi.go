@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/google/gnxi/utils/xpath"
+	"github.com/influxdata/telegraf/logger"
 	"github.com/openconfig/gnmi/proto/gnmi"
 	"github.com/openconfig/gnmi/proto/gnmi_ext"
 	"google.golang.org/grpc/keepalive"
@@ -284,6 +285,8 @@ func (c *GNMI) Start(acc telegraf.Accumulator) error {
 				acc.AddError(fmt.Errorf("unable to parse address %s: %w", addr, err))
 				return
 			}
+			log := logger.New("inputs", "gnmi", "")
+			log.AddAttribute("routerIp", host)
 			h := handler{
 				host:                          host,
 				port:                          port,
@@ -299,7 +302,7 @@ func (c *GNMI) Start(acc telegraf.Accumulator) error {
 				guessPathStrategy:             c.GuessPathStrategy,
 				decoder:                       c.decoder,
 				enforceFirstNamespaceAsOrigin: c.EnforceFirstNamespaceAsOrigin,
-				log:                           c.Log,
+				log:                           log,
 				ClientParameters: keepalive.ClientParameters{
 					Time:                time.Duration(c.KeepaliveTime),
 					Timeout:             time.Duration(c.KeepaliveTimeout),
@@ -308,6 +311,7 @@ func (c *GNMI) Start(acc telegraf.Accumulator) error {
 			}
 			for ctx.Err() == nil {
 				if err := h.subscribeGNMI(ctx, acc, tlscfg, request); err != nil && ctx.Err() == nil {
+					h.log.Errorf("Error subscribing to %s: %v", addr, err)
 					acc.AddError(err)
 				}
 
