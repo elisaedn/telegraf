@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"strings"
 	"time"
@@ -142,15 +143,21 @@ func (client *Client) GetSubtree(ctx context.Context, subtree Subtree) (*xmlquer
 		var (
 			rpcErrors netconf.RPCErrors
 			rpcError  netconf.RPCError
+			reply     = &netconf.RPCReply{
+				XMLName: xml.Name{Local: "rpc-reply", Space: "urn:ietf:params:xml:ns:netconf:base:1.0"},
+			}
 		)
+
 		if errors.As(err, &rpcErrors) {
-			replyErr := &netconf.RPCReply{Errors: rpcErrors}
-			errXml, _ := xml.MarshalIndent(replyErr, "", "  ")
-			client.log.Warnf("Subtree %s collection failed with multiple rpc errors:\n%s", subtree.Name, errXml)
+			reply.Errors = rpcErrors
 		} else if errors.As(err, &rpcError) {
-			replyErr := &netconf.RPCReply{Errors: netconf.RPCErrors{rpcError}}
-			errXml, _ := xml.MarshalIndent(replyErr, "", "  ")
-			client.log.Warnf("Subtree %s collection failed with rpc error:\n%s", subtree.Name, errXml)
+			reply.Errors = netconf.RPCErrors{rpcError}
+		}
+
+		if reply.Errors != nil {
+			rpcReply, _ := xml.MarshalIndent(reply, "", "  ")
+			unescaped := html.UnescapeString(string(rpcReply))
+			client.log.Warnf("Subtree %s collection failed with rpc error:\n%s", subtree.Name, unescaped)
 		} else {
 			client.log.Errorf("Command execution failed: %v", err)
 		}
