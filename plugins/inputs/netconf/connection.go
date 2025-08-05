@@ -191,13 +191,10 @@ func parseNodeFromData(xpath string, data []byte, remove bool) (*xmlquery.Node, 
 		return nil, fmt.Errorf("failed to parse reply: %v", err)
 	}
 
-	if xpath == "" {
-		return root, nil
-	}
-
-	if strings.HasPrefix(xpath, "/data") {
+	if !strings.HasPrefix(xpath, "/rpc-reply") {
 		xpath = "/rpc-reply" + xpath
 	}
+
 	node := xmlquery.FindOne(root, xpath)
 	if node == nil {
 		return nil, fmt.Errorf("nothing found at %s", xpath)
