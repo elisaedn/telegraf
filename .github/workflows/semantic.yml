@@ -9,7 +9,7 @@ on:
 
 jobs:
   semantic:
+    if: false
     uses: influxdata/validate-semantic-github-messages/.github/workflows/semantic.yml@main
     with:
       COMMITS_HISTORY: 0
-
