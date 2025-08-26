@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   milestone_job:
-    if: github.event.pull_request.merged == true
+    if: false
     runs-on: ubuntu-latest
     name: Assign milestones to PRs
     steps:
@@ -21,9 +21,9 @@ jobs:
         id: assign-milestone
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          bugfix-labels: 'fix,chore,docs,test'
-          minor-labels: 'feat'
-          major-labels: 'breaking change'
-          fallback: 'minor'
+          bugfix-labels: "fix,chore,docs,test"
+          minor-labels: "feat"
+          major-labels: "breaking change"
+          fallback: "minor"
       - name: Show milestone
         run: echo "Assigned milestone is ${{ steps.assign-milestone.outputs.milestone }}"
