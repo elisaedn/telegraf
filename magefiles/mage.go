@@ -60,7 +60,7 @@ var (
 func init() {
 	os.Setenv(mg.VerboseEnv, "1")
 	os.Setenv("CGO_ENABLED", "0")
-	version := os.Getenv("RELEASE_TAG")
+	version := strings.TrimPrefix(os.Getenv("RELEASE_TAG"), "v")
 	if version == "" {
 		version = "0.0.1"
 	}

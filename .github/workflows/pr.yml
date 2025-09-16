@@ -23,8 +23,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup mage
-        uses: elisa-actions/setup-go-and-mage@v1
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+
+      - name: Setup Mage
+        uses: magefile/mage-action@v3
+        with:
+          install-only: true
 
       - name: Run go mod tidy
         run: go mod tidy
@@ -32,7 +39,7 @@ jobs:
       - name: Test
         run: mage go:test
 
-      - name: Build binary
+      - name: Build docker binary
         run: mage go:build
 
       - name: Build all binaries
